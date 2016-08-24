@@ -1,0 +1,428 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+    <title>OpenAerialMap - open source imagery browser</title>
+
+    <link rel="stylesheet" href="css/reveal.css">
+    <link rel="stylesheet" href="css/theme/oam.css">
+
+    <!-- Theme used for syntax highlighting of code -->
+    <link rel="stylesheet" href="lib/css/zenburn.css">
+
+    <!-- Printing and PDF exports -->
+    <script>
+      var link = document.createElement( 'link' );
+      link.rel = 'stylesheet';
+      link.type = 'text/css';
+      link.href = window.location.search.match( /print-pdf/gi ) ? 'css/print/pdf.css' : 'css/print/paper.css';
+      document.getElementsByTagName( 'head' )[0].appendChild( link );
+    </script>
+  </head>
+  <body>
+    <div class="reveal">
+      <div class="slides">
+
+        <section data-background="assets/oam-browser-post-illu.png" data-background-color="#000000">
+          <div style="background-color: rgba(31, 59, 69, 0.9); color: #fff; padding: 20px;">
+            <h1>OpenAerialMap</h1>
+            <h4>open source imagery browser</h4>
+            <hr style="margin: 64px 0 32px 0" />
+            <p style="font-weight: 700; margin-bottom: 0;">Daniel da Silva</p>
+            <p style="font-size: 24px; margin: 0 0 32px 0;"><img src="assets/devseed.svg" style="width: 1em; border: none; box-shadow: none; background: none; margin: 0 8px 0 0; vertical-align: sub;"> Development Seed</p>
+            <div style="font-size: 26px">
+              <p style="opacity: 0.6"><img src="assets/github.svg" style="width: 1em; border: none; box-shadow: none; background: none; margin: 0 16px 0 0;"> http://github.com/danielfdsilva</p>
+              <p style="opacity: 0.6"><img src="assets/twitter.svg" style="width: 1em; border: none; box-shadow: none; background: none; margin: 0 16px 0 0;"> @danielfdsilva</p>
+            </div>
+          </div>
+
+          <aside class="notes" data-markdown>
+            - A.k.a. Building an open source imagery browser: UX and technical decisions to develop OpenAerialMap
+          </aside> 
+        </section>
+
+        <section>
+          <section>
+            <h2>What problems are we trying to solve?</h2>
+            <ul>
+              <li class="fragment">Lack of imagery for disaster response</li>
+              <li class="fragment">Although more and more available is not always easy to find</li>
+              <li class="fragment">Need of a simple way to find and access the imagery</li>
+            </ul>
+
+            <aside class="notes" data-markdown>
+              - Imagery for disaster response needs to be as up to date as possible.
+
+              - Imagery from satellites, unmanned aerial vehicles (UAVs) and other aircraft is becoming increasingly available after a disaster. However it is often difficult to determine what is available, accessible and how to access it.
+
+              - OpenAerialMap (OAM) seeks to solve this by providing a simple open way to process and provide imagery for humanitarian response and disaster preparedness.
+            </aside> 
+          </section>
+
+           <section data-background="assets/guinea-ebola.gif" data-background-color="#000000">
+              <div style="background-color: rgba(31, 59, 69, 0.9); color: #fff; padding: 20px;">
+                <h3 style="line-height: 1.4; margin: 0;">Mamou, Guinea</h3>
+                <small>Ebola Outbreak</small>
+                <p>29 hours, 68 contributors, 20 105 buildings</p>
+              </div>
+
+            <aside class="notes" data-markdown>
+              - Example of how critical the existence of imagery can be
+              - Gif showing the progress of osm edits in a previously unmapped region.
+              - Using aerial imagery, 68 volunteers were able to map an entire region
+              - Vital importance for disaster preparedness.
+            </aside>
+          </section>
+        </section>
+
+        <section>
+          <section>
+            <h1>Open Imagery Network</h1>
+            <ul>
+              <li class="fragment">Network of open licensed imagery (CC-BY-4.0)</li>
+              <li class="fragment">Distributed system</li>
+              <li class="fragment">Anyone can contribute with imagery</li>
+            </ul>
+
+            <aside class="notes" data-markdown>
+              - The Open Imagery network is a network of openly licensed imagery that serves as the foundation of imagery that OpenAerialMap is built upon.
+
+              - It is a distributed system in the sense that any person/entity can host an imagery node. If one was to fail the network would still be operational.
+
+              ### Extra:
+              - Stripping it down is a standard of how imagery is shared through nodes.
+            </aside> 
+          </section>
+
+          <section>
+            <h3>2 ways to contribute</h3>
+            <ol>
+              <li class="fragment">Host an OIN node</li>
+              <li class="fragment">Upload imagery using the <em>uploader</em></li>
+            </ol>
+
+            <aside class="notes" data-markdown>
+              - All needed is to follow the OIN standard, release the imagery under CC-BY-4.0, and add the node information to the register.
+
+              - If you have imagery but can't afford to host a node, a good way to contribute is to upload it to the HOT OIN node using the uploader (more on that one later)
+            </aside> 
+          </section>
+
+        </section>
+
+        <section>
+          <section>
+            <h1>What is OAM?</h1>
+            <p class="fragment">Set of tools for finding and sharing imagery</p>
+
+            <aside class="notes" data-markdown>
+              - Set of tools for finding and sharing imagery available in the OIN
+            </aside> 
+          </section>
+
+          <section>
+            <h3>Catalog</h3>
+            <p>Indexes imagery from OIN and makes it available through the API</p>
+            <pre><code class="hljs" data-trim>
+{
+  "meta": {
+    "provided_by": "OpenAerialMap",
+    "license": "CC-BY 4.0",
+    "website": "http://beta.openaerialmap.org",
+    "page": 1,
+    "limit": 1,
+    "found": 2371
+  },
+  "results": [
+    {
+      "_id": "571975932b67227a79b4faf4",
+      "uuid": "http://hotosm-oam.s3.amazonaws.com/16APR19153537-PS8b-055228871010_01_P002.tif",
+      "geojson": {
+        "type": "Polygon",
+        "coordinates": [...],
+        "bbox": [...]
+      },
+      "meta_uri": "http://hotosm-oam.s3.amazonaws.com/16APR19153537-PS8b-055228871010_01_P002.tif_meta.json",
+      "properties": {
+        "thumbnail": "http://hotosm-oam.s3.amazonaws.com/16APR19153537-PS8b-055228871010_01_P002.tif.thumb.png",
+        "tms": "http://oam-tiles.s3.amazonaws.com/ecuador-earthquake-priority-1.2/{z}/{x}/{y}.png",
+        "sensor": "GE-01"
+      }
+      (...)
+    }
+  ]
+}
+            </code></pre>
+            <small>http://api.openaerialmap.org/meta?has_tiled</small>
+
+            <aside class="notes" data-markdown>
+              - We have the catalog which indexes imagery from OIN and makes it available through the api allowing filtering by properties such as: 
+                - bbox
+                - provider
+                - acquisition date
+                - etc
+
+              - At this point we have the imagery and a way to access it. Now we just needed a way to make it easily available for the common user.
+            </aside>
+          </section>
+
+        </section>
+
+        <section>
+         <section data-background="assets/oam-browser.png" data-background-color="#000000">
+            <div style="background-color: rgba(31, 59, 69, 0.9); color: #fff; padding: 20px;">
+              <h1>The Browser as a solution</h1>
+            </div>
+
+            <aside class="notes" data-markdown>
+              - The oam browser provides a simple and easy way for users to find and download / use imagery.
+            </aside>
+          </section>
+
+          <section data-background="assets/sweat.gif" data-background-color="#000000">
+            <div style="background-color: rgba(31, 59, 69, 0.9); color: #fff; padding: 20px;">
+              <h2>Demo time!</h2>
+              <p><a href="http://beta.openaerialmap.org/" target="_blank">http://beta.openaerialmap.org/</a></p>
+            </div>
+
+            <aside class="notes" data-markdown>
+              - grid based interaction
+              - Users can search for a location
+              - Or explore freely
+              - Number tells you how many images
+            </aside>
+          </section>
+        </section>
+
+        <section>
+          <section data-background="assets/battleship-board-game.jpg" data-background-color="#000000">
+            <div style="background-color: rgba(31, 59, 69, 0.9); color: #fff; padding: 20px;">
+              <h1>The grid</h1>
+              <h3>UI/UX considerations</h3>
+            </div>
+
+            <aside class="notes" data-markdown>
+              - Coming up with a grid -> hard
+              - Figure out a way to show a lot of data in an easy way.
+              - Simple and not overwhelming.
+            </aside>
+          </section>
+
+          <section>
+            <h3>Using footprints</h3>
+            <img class="stretch" src="assets/grid-exp1.png" alt="">
+
+            <aside class="notes" data-markdown>
+              - footprints on the map.
+              - problem with different ratios and areas.
+              - different sensors, can't normalize.
+              - problem navigating the map with so many different sizes.
+              - Inspiration from experiments with HEX grid of turf.js and battleship game 
+            </aside>
+          </section>
+
+          <section>
+            <h3>Choropleth grid</h3>
+            <img class="stretch" src="assets/grid-exp2.png" alt="">
+
+            <aside class="notes" data-markdown>
+              - Decided to create a choropleth grid where areas are shaded according to the number of footprints intersecting them.
+              - Easy for the user to identify what areas are covered, and how many images are available.
+            </aside>
+          </section>
+
+        </section>
+
+
+        <section>
+          <section data-background="assets/battleship-board-game.jpg" data-background-color="#000000">
+            <div style="background-color: rgba(31, 59, 69, 0.9); color: #fff; padding: 20px;">
+              <h1>The grid</h1>
+              <h3>building process</h3>
+            </div>
+
+            <aside class="notes" data-markdown>
+              - We ended up doing 3 main iterations of the grid
+            </aside>
+          </section>
+
+          <section>
+            <h3>Coordinates grid</h3>
+            <img src="assets/oam-browser-geo1.png">
+
+            <aside class="notes" data-markdown>
+              - First one coordinates grid.
+              - Grid was drawn based on coordinates so all cells have the same physical size.
+              - However as we move further from the equator, the cells become too rectangular.
+            </aside>
+          </section>
+
+          <section>
+            <h3>Coordinates grid</h3>
+            <img src="assets/oam-browser-geo2.png">
+
+            <aside class="notes" data-markdown>
+              - This is strange from a UX standpoint.
+            </aside>
+          </section>
+
+          <section>
+            <h3>Pixel perfect grid</h3>
+            <video controls style="border: 4px solid #1f3b45">
+              <source src="assets/oam-browser-grid2.mp4" type="video/mp4">
+            </video> 
+
+            <aside class="notes" data-markdown>
+              - Solution was to use a pixel grid
+              - All the cells look the same, regardless of the area the occupy.
+              - Not as geographically accurate but easier for the user. 
+
+              - Problem was that the grid wasn't very performant.
+              - The drawing of the grid and the calculation of the intersections used a lot o processing power.
+              - Had to disable images below a certain zoom
+            </aside>
+          </section>
+
+          <section>
+            <h3>Zoom independent grid</h3>
+            <video controls style="border: 4px solid #1f3b45">
+              <source src="assets/oam-browser--zoom-grid.mp4" type="video/mp4">
+            </video> 
+
+            <aside class="notes" data-markdown>
+              - The cell size changes depending on the zoom level
+              - Each increase in zoom divides the cells in 4 smaller ones.
+
+              - Benefits
+                - Way faster
+                - Choropleth always visible
+                - Easy to use
+            </aside>
+          </section>
+        </section>
+
+
+        <section>
+          <h1>Tech stack</h1>
+          <span class="fragment">Mapbox</span>
+          <span class="fragment">+</span>
+          <span class="fragment">React</span>
+
+          <aside class="notes" data-markdown>
+            - Mapbox
+              - Lot of experience with it.
+              - Very flexible, powerful map styling and easily extensible.
+
+            - React:
+              - Open source, good community, simple to use.
+              - We often go for cutting edge tech and it showed a lot of potential so we decided to experiment integrating it with mapbox. On another occasion we tried using Angular but is was not as straightforward.
+              - It's unidirectional data flow, makes for a very nice integration with mapbox because it's easy to control how things connect.
+
+            - Travis that keeps everything running.
+          </aside>
+        </section>
+
+        <section>
+          <section>
+            <h1>The OAM components</h1>
+            <aside class="notes" data-markdown>
+              - Already mentioned the catalog and the browser but there are others
+            </aside>
+          </section>
+
+          <section>
+            <h2>Uploader</h2>
+            <p><a href="https://upload.openaerialmap.org/" target="_blank">https://upload.openaerialmap.org/</a></p>
+            <img src="assets/oam-uploader.png">
+            <aside class="notes" data-markdown>
+              - The uploader is a way to upload imagery to the HOT OIN node.
+              - To reduce spam imagery the uploader is only available to authorized people, although an access token is easy to request.
+            </aside>
+          </section>
+
+          <section>
+            <h2>Documentation</h2>
+            <p><a href="http://docs.openaerialmap.org/" target="_blank">http://docs.openaerialmap.org/</a></p>
+            <img src="assets/oam-docs.png">
+            <aside class="notes" data-markdown>
+              - Centralized place with evergrowing info about all the OAM tools
+            </aside>
+          </section>
+
+          <section data-background="assets/reusable-design-components.png" data-background-color="#000000">
+            <div style="background-color: rgba(31, 59, 69, 0.9); color: #fff; padding: 20px;">
+              <h2>Design System</h2>
+              <p><a href="https://developmentseed.org/blog/2016/07/14/reusable-design-components/" target="_blank"><small>http://tiny.cc/design-system</small></a></p>
+            </div>
+            <aside class="notes" data-markdown>
+              - Material for another talk.
+              - In brief, the design system is a set of styles / guidelines / shareable code that is used throughout the OAM universe to ensure visual and behavioral consistency
+            </aside>
+          </section>
+        </section>
+
+ <!--        <section data-background-video="assets/road.mp4" data-background-color="#000000">
+          <div style="background-color: rgba(31, 59, 69, 0.9); color: #fff; padding: 20px;">
+            <h1>Roadmap</h1>
+          </div>
+        </section> -->
+
+        <section>
+          <h1>Roadmap</h1>
+          <ul>
+            <li class="fragment">Simplify the contribution process</li>
+            <li class="fragment">Lower the barrier to share and publish</li>
+            <li class="fragment">Get more organizations to have OIN nodes</li>
+          </ul>
+
+          <aside class="notes" data-markdown>
+            - Simplify how people can make a difference and contribute
+            - Mostly through improvements to the uploader form
+          </aside>
+        </section>
+
+        <section>
+          <h1>Get Involved</h1>
+          <p><a href="https://github.com/hotosm/" target="_blank">https://github.com/hotosm/</a></p>
+
+          <aside class="notes" data-markdown>
+            - Contribute with code
+            - Suggest improvements / give ideas
+            - Help other users submit imagery
+          </aside>
+        </section>
+
+        <section data-background="https://media.giphy.com/media/3o7TKqfDfA7fXQL7SE/giphy.gif" data-background-color="#000000">
+          <div style="background-color: rgba(31, 59, 69, 0.9); color: #fff; padding: 20px;">
+            <h1>Thank you!</h1>
+            <h3>Questions?</h3>
+            <hr style="margin: 64px 0" />
+            <p style="opacity: 0.8"><img src="assets/github.svg" style="width: 32px; border: none; box-shadow: none; background: none; margin: 0 16px 0 0;"> http://github.com/danielfdsilva</p>
+            <p style="opacity: 0.8"><img src="assets/twitter.svg" style="width: 32px; border: none; box-shadow: none; background: none; margin: 0 16px 0 0;"> @danielfdsilva</p>
+          </div>
+        </section>
+
+      </div>
+    </div>
+
+    <script src="lib/js/head.min.js"></script>
+    <script src="js/reveal.js"></script>
+
+    <script>
+      // More info https://github.com/hakimel/reveal.js#configuration
+      Reveal.initialize({
+        history: true,
+
+        // More info https://github.com/hakimel/reveal.js#dependencies
+        dependencies: [
+          { src: 'plugin/markdown/marked.js' },
+          { src: 'plugin/markdown/markdown.js' },
+          { src: 'plugin/notes/notes.js', async: true },
+          { src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } }
+        ]
+      });
+    </script>
+  </body>
+</html>
